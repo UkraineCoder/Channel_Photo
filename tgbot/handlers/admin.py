@@ -1,8 +1,8 @@
+import re
+
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
-
-from tgbot.filters.time import MinuteFilter
 from tgbot.infrastucture.database.functions.channel_photo import add_channel_photo
 from tgbot.misc.states import AdminTotalTime
 
@@ -64,7 +64,7 @@ def register_admin(dp: Dispatcher):
     dp.register_message_handler(admin_help, commands=["help"], is_admin=True)
     dp.register_message_handler(admin_photo, content_types=types.ContentType.PHOTO, is_admin=True)
     dp.register_message_handler(edit_total_time, commands=["edit_total_time"], is_admin=True)
-    dp.register_message_handler(set_time, MinuteFilter(), state=AdminTotalTime.Time)
+    dp.register_message_handler(set_time, regexp=re.compile(r"^[1-9]\d*$"), state=AdminTotalTime.Time)
     dp.register_message_handler(set_time_error, state=AdminTotalTime.Time)
 
 
