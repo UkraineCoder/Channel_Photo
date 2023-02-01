@@ -27,7 +27,6 @@ class DbConfig:
 @dataclass
 class TgBot:
     token: str
-    admin_id: List[int]
     channel_id: int
     redis_password: str
 
@@ -51,7 +50,6 @@ def load_config(path: str = None):
     return Config(
         tg_bot=TgBot(
             token=env.str("BOT_TOKEN"),
-            admin_id=list(map(int, env.list("MAIN_ADMIN"))),
             channel_id=env.int("CHANNEL_ID"),
             redis_password=env.str("REDIS_PASSWORD"),
         ),

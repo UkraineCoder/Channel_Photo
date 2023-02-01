@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from tgbot.config import DbConfig
-from tgbot.infrastucture.database.models.base import DatabaseModel
 
 
 async def create_session_pool(db: DbConfig, echo=False) -> Callable[[], AsyncContextManager[AsyncSession]]:
@@ -17,8 +16,4 @@ async def create_session_pool(db: DbConfig, echo=False) -> Callable[[], AsyncCon
         echo=echo,
     )
 
-    async with engine.begin() as conn:
-        await conn.run_sync(DatabaseModel.metadata.create_all)
-
-    session_pool = sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
-    return session_pool
+    return sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)

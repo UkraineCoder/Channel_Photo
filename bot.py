@@ -5,7 +5,6 @@ from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler_di import ContextSchedulerDecorator
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 from tgbot.config import load_config, Config
 from tgbot.filters.admin import AdminFilter
@@ -14,7 +13,6 @@ from tgbot.handlers.admin_add import register_admin_add
 from tgbot.handlers.admin_delete import register_delete_time
 from tgbot.handlers.admin_edit_time import register_edit_time
 from tgbot.handlers.admin_info import register_info_time
-from tgbot.infrastucture.database.functions.admins import get_admin, add_admin
 from tgbot.infrastucture.database.functions.channel_photo import get_photo, delete_channel_photo
 from tgbot.infrastucture.database.functions.setup import create_session_pool
 from tgbot.middlewares.database import DatabaseMiddleware
@@ -42,26 +40,14 @@ def register_all_handlers(dp):
     register_info_time(dp)
 
 
-async def on_startup(session_pool, config: Config):
-    session: AsyncSession = session_pool()
-
-    main_admin = config.tg_bot.admin_id[0]
-    admin_id = await get_admin(session, telegram_id=main_admin)
-
-    if not admin_id:
-        await add_admin(session, telegram_id=main_admin)
-
-    await session.close()
-
-
 async def send_message_to_channel(bot: Bot, config: Config, session_pool: sessionmaker):
     async with session_pool() as session:
         photo = await get_photo(session)
-        try:
+        if photo:
             await bot.send_photo(chat_id=config.tg_bot.channel_id, photo=photo.file_id)
 
             await delete_channel_photo(session, photo_id=photo.photo_id)
-        except Exception:
+        else:
             return
 
 
@@ -82,7 +68,7 @@ async def main():
 
     job_stores = {
         "default": RedisJobStore(
-            host='redis_cache', password=config.tg_bot.redis_password,
+            host='redis_cache',  password=config.tg_bot.redis_password,
             jobs_key="dispatched_trips_jobs", run_times_key="dispatched_trips_running"
         )
     }
@@ -105,12 +91,10 @@ async def main():
     register_all_filters(dp)
     register_all_handlers(dp)
 
-    await on_startup(session_pool, config)
-
     try:
         scheduler.start()
         if not scheduler.get_job('send_message_to_channel'):
-            scheduler.add_job(send_message_to_channel, "interval", minutes=15, id="send_message_to_channel",
+            scheduler.add_job(send_message_to_channel, "interval", seconds=10, id="send_message_to_channel",
                               replace_existing=True)
         await dp.start_polling()
     finally:
