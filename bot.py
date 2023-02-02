@@ -94,7 +94,7 @@ async def main():
     try:
         scheduler.start()
         if not scheduler.get_job('send_message_to_channel'):
-            scheduler.add_job(send_message_to_channel, "interval", seconds=10, id="send_message_to_channel",
+            scheduler.add_job(send_message_to_channel, "interval", minutes=15, id="send_message_to_channel",
                               replace_existing=True)
         await dp.start_polling()
     finally:
