@@ -1,8 +1,8 @@
-# Telegram Bot for Picture Sharing
+# Telegram Bot for Picture Send
 
 ## Overview
 
-This is a telegram bot for sharing pictures with different frequency and scheduling in advance. The bot is designed to be used only by administrators, who can add or remove other administrators.
+This is a telegram bot for send pictures with different frequency and scheduling in advance. The bot is designed to be used only by administrators, who can add or remove other administrators.
 
 ## Features
 
